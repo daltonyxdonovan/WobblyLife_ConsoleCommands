@@ -16,8 +16,8 @@ namespace WobblyLife_ConsoleCommands
         public GameObject popupObject;
         public TextMeshProUGUI commandText;
         public TextMeshProUGUI popupText;
-        public string command;
-        public string popup;
+        public string command = "";
+        public string popup = "";
         public int popupTimer = 0;
         bool showConsole = true;
         bool doneStartingUp = false;
@@ -48,7 +48,7 @@ namespace WobblyLife_ConsoleCommands
             commandText.fontSize = 20;
             commandText.color = Color.white;
             commandText.alignment = TextAlignmentOptions.Center;
-            commandText.rectTransform.position = new Vector3(0,400, 0);
+            commandText.rectTransform.position = new Vector3(0,-500, 0);
             commandText.enableWordWrapping = false;
 
             popupObject = new GameObject("popupObject");
@@ -101,7 +101,7 @@ namespace WobblyLife_ConsoleCommands
             else
             {
                 popupText.rectTransform.position = new Vector3(0, 0, 0);
-                commandText.rectTransform.position = new Vector3(0, 400, 0);
+                commandText.rectTransform.position = new Vector3(0, -500, 0);
                 //set scale of both to 1,1,1
                 popupText.rectTransform.localScale = new Vector3(1, 1, 1);
                 commandText.rectTransform.localScale = new Vector3(1, 1, 1);
