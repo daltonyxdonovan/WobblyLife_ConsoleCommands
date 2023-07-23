@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System.Reflection;
 
 namespace WobblyLife_ConsoleCommands
 {
@@ -21,6 +22,7 @@ namespace WobblyLife_ConsoleCommands
         public int popupTimer = 0;
         bool showConsole = false;
         bool doneStartingUp = false;
+        RewardMoneyData rewardMoneyData = FindObjectOfType<RewardMoneyData>();
 
         WobblyAchievement[] achievements = {
             WobblyAchievement.COMPLETE_JOB_JELLY,
@@ -163,6 +165,16 @@ namespace WobblyLife_ConsoleCommands
             popup = text;
         }
         
+        public void SetMoney(int amount)
+        {
+            FieldInfo moneyField = typeof(RewardMoneyData).GetField("money", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (moneyField != null)
+            {
+                moneyField.SetValue(rewardMoneyData, amount);
+                Log("set money to " + moneyField.GetValue(rewardMoneyData));
+            }
+        }
+
         public void UnlockAchievements()
         {
             PlayerController player = FindObjectOfType<PlayerController>();
@@ -252,6 +264,17 @@ namespace WobblyLife_ConsoleCommands
                     else if (command.ToLower().StartsWith("/achget"))
                     {
                         UnlockAchievements();
+                    }
+                    else if (command.ToLower().StartsWith("/setmoney"))
+                    {
+                        string[] strings = command.Split();
+                        int choice = int.Parse(strings[1]);
+                        if (choice < 0 || choice > 2147000000)
+                        {
+                            Log("Choose an amount 0 - 2147000000");
+                            return;
+                        }
+                        SetMoney(choice);
                     }
 
                     showConsole = false;
