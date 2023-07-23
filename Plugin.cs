@@ -16,10 +16,10 @@ namespace WobblyLife_ConsoleCommands
         public GameObject popupObject;
         public TextMeshProUGUI commandText;
         public TextMeshProUGUI popupText;
-        public string command = "";
+        public string command = "press / to open console";
         public string popup = "";
         public int popupTimer = 0;
-        bool showConsole = true;
+        bool showConsole = false;
         bool doneStartingUp = false;
 
 
@@ -45,8 +45,9 @@ namespace WobblyLife_ConsoleCommands
             commandObject.AddComponent<TextMeshProUGUI>();
             commandText = commandObject.GetComponent<TextMeshProUGUI>();
             commandText.text = "press / to open console";
-            commandText.fontSize = 20;
+            commandText.fontSize = 40;
             commandText.color = Color.white;
+            commandText.fontStyle = FontStyles.Bold;
             commandText.alignment = TextAlignmentOptions.Center;
             commandText.rectTransform.position = new Vector3(0,-500, 0);
             commandText.enableWordWrapping = false;
@@ -56,23 +57,21 @@ namespace WobblyLife_ConsoleCommands
             popupObject.AddComponent<TextMeshProUGUI>();
             popupText = popupObject.GetComponent<TextMeshProUGUI>();
             popupText.text = "";
-            popupText.fontSize = 20;
+            popupText.fontSize = 40;
             popupText.color = Color.white;
+            commandText.fontStyle = FontStyles.Bold;
             popupText.alignment = TextAlignmentOptions.Center;
             popupText.rectTransform.position = new Vector3(0, 0, 0);
             popupText.enableWordWrapping = false;
             Debug.Log("attached console");
-            Debug.Log(canvas);
-            Debug.Log(commandText);
-            Debug.Log(popupText);
+
         }
 
         public void Log(string text)
         {
             Debug.Log(text);
-            popupTimer = 1200;
-            popupText.text = text;
-            
+            popupTimer = 300;
+            popup = text;
         }
 
         public void Update()
@@ -88,35 +87,29 @@ namespace WobblyLife_ConsoleCommands
                 return;
             }
 
-            
-
-            
-            
-
             if (canvas == null)
             {
                 AttachConsole();
-                
             }
             else
             {
                 popupText.rectTransform.position = new Vector3(0, 0, 0);
-                commandText.rectTransform.position = new Vector3(0, -500, 0);
-                //set scale of both to 1,1,1
+                commandText.rectTransform.position = new Vector3(0, 0, 0);
                 popupText.rectTransform.localScale = new Vector3(1, 1, 1);
                 commandText.rectTransform.localScale = new Vector3(1, 1, 1);
-                //set local position of both to 0,0,0
                 popupText.rectTransform.localPosition = new Vector3(0, 0, 0);
-                commandText.rectTransform.localPosition = new Vector3(0, 400, 0);
+                commandText.rectTransform.localPosition = new Vector3(0, -500, 0);
+
                 if (popupTimer > 0)
                 {
                     popupTimer--;
                     
                 }
-                if (popupTimer == 0)
+                if (popupTimer <= 0)
                 {
-                    popupText.text = "";
+                    popup = "";
                 }
+
                 commandText.text = command;
                 popupText.text = popup;
 
@@ -126,12 +119,13 @@ namespace WobblyLife_ConsoleCommands
                     showConsole = !showConsole;
                     if (showConsole)
                     {
-                        commandText.color = Color.white;
+                        //commandText.color = Color.white;
                         command = "/";
                     }
                     else
                     {
-                        commandText.color = Color.clear;
+                        //commandText.color = Color.clear;
+                        command = "press / to enter commands";
                     }
                     commandText.text = command;
                 }
@@ -157,8 +151,8 @@ namespace WobblyLife_ConsoleCommands
                         Log("what the fuck man");
                     }
 
-                    command = "";
                     showConsole = false;
+                    command = "press / to open console";
                 }
 
                 if (showConsole)
