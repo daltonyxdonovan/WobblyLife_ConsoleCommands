@@ -23,7 +23,7 @@ namespace WobblyLife_ConsoleCommands
         bool showConsole = false;
         bool doneStartingUp = false;
         RewardMoneyData rewardMoneyData = FindObjectOfType<RewardMoneyData>();
-
+        
         WobblyAchievement[] achievements = {
             WobblyAchievement.COMPLETE_JOB_JELLY,
 	        // Token: 0x0400215A RID: 8538
@@ -167,10 +167,12 @@ namespace WobblyLife_ConsoleCommands
         
         public void AddMoney(int amount)
         {
-            MoneyBag moneyBag = FindObjectOfType<MoneyBag>();
-            moneyBag.SetMoney(moneyBag.GetMoney() + amount);
+            //MoneyBag moneyBag = FindObjectOfType<MoneyBag>();
+            //moneyBag.SetMoney(moneyBag.GetMoney() + amount);
 
-            Log($"added money\n${moneyBag.GetMoney()}");
+            //Log($"added money\n${moneyBag.GetMoney()}");
+            //TreasureJobMission treasureJM = FindObjectOfType<TreasureJobMission>();
+            //moneyBag = treasureJM.treasureMoneySort.prefabs[Random.Range(0, treasureMoneySort.prefabs.Count)];
         }
 
         public void UnlockAchievements()
