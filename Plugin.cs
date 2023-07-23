@@ -165,14 +165,12 @@ namespace WobblyLife_ConsoleCommands
             popup = text;
         }
         
-        public void SetMoney(int amount)
+        public void AddMoney(int amount)
         {
-            FieldInfo moneyField = typeof(RewardMoneyData).GetField("money", BindingFlags.NonPublic | BindingFlags.Instance);
-            if (moneyField != null)
-            {
-                moneyField.SetValue(rewardMoneyData, amount);
-                Log("set money to " + moneyField.GetValue(rewardMoneyData));
-            }
+            MoneyBag moneyBag = FindObjectOfType<MoneyBag>();
+            moneyBag.SetMoney(moneyBag.GetMoney() + amount);
+
+            Log($"added money\n${moneyBag.GetMoney()}");
         }
 
         public void UnlockAchievements()
@@ -265,7 +263,7 @@ namespace WobblyLife_ConsoleCommands
                     {
                         UnlockAchievements();
                     }
-                    else if (command.ToLower().StartsWith("/setmoney"))
+                    else if (command.ToLower().StartsWith("/cash"))
                     {
                         string[] strings = command.Split();
                         int choice = int.Parse(strings[1]);
@@ -274,7 +272,7 @@ namespace WobblyLife_ConsoleCommands
                             Log("Choose an amount 0 - 2147000000");
                             return;
                         }
-                        SetMoney(choice);
+                        AddMoney(choice);
                     }
 
                     showConsole = false;
