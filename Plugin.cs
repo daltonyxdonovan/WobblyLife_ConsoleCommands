@@ -22,6 +22,95 @@ namespace WobblyLife_ConsoleCommands
         bool showConsole = false;
         bool doneStartingUp = false;
 
+        WobblyAchievement[] achievements = {
+            WobblyAchievement.COMPLETE_JOB_JELLY,
+	        // Token: 0x0400215A RID: 8538
+            WobblyAchievement.COMPLETE_JOB_PIZZA,
+            // Token: 0x0400215B RID: 8539
+            WobblyAchievement.COMPLETE_JOB_BURGER,
+            // Token: 0x0400215C RID: 8540
+            WobblyAchievement.COMPLETE_JOB_POWER_PLANT,
+            // Token: 0x0400215D RID: 8541
+            WobblyAchievement.COMPLETE_JOB_EMERGENCY,
+            // Token: 0x0400215E RID: 8542
+            WobblyAchievement.COMPLETE_JOB_NEWROUND,
+            // Token: 0x0400215F RID: 8543
+            WobblyAchievement.COMPLETE_JOB_FURNITURE,
+            // Token: 0x04002160 RID: 8544
+            WobblyAchievement.COMPLETE_JOB_PIZZA_UFO,
+            // Token: 0x04002161 RID: 8545
+            WobblyAchievement.COMPLETE_JOB_GARBAGE,
+            // Token: 0x04002162 RID: 8546
+            WobblyAchievement.COMPLETE_RACE_KART,
+            // Token: 0x04002163 RID: 8547
+            WobblyAchievement.COMPLETE_RACE_PLANE,
+            // Token: 0x04002164 RID: 8548
+            WobblyAchievement.COMPLETE_RACE_BOAT,
+            // Token: 0x04002165 RID: 8549
+            WobblyAchievement.COMPLETE_TEMPLE_PUZZLE,
+            // Token: 0x04002166 RID: 8550
+            WobblyAchievement.BUY_FIRST_HOUSE,
+            // Token: 0x04002167 RID: 8551
+            WobblyAchievement.HAVE_1000_IN_THE_BANK,
+            // Token: 0x04002168 RID: 8552
+            WobblyAchievement.HAVE_5000_IN_THE_BANK,
+            // Token: 0x04002169 RID: 8553
+            WobblyAchievement.HAVE_10000_IN_THE_BANK,
+            // Token: 0x0400216A RID: 8554
+            WobblyAchievement.COLLECT_ALL_PRESENTS_ON_WOBBLY_ISLAND,
+            // Token: 0x0400216B RID: 8555
+            WobblyAchievement.FEED_MONSTER_25_TOXIC_BARRELS,
+            // Token: 0x0400216C RID: 8556
+            WobblyAchievement.FEED_MONSTER_50_TOXIC_BARRELS,
+            // Token: 0x0400216D RID: 8557
+            WobblyAchievement.COMPLETE_JOB_FARM_PLOW,
+            // Token: 0x0400216E RID: 8558
+            WobblyAchievement.COMPLETE_JOB_FARM_SEED,
+            // Token: 0x0400216F RID: 8559
+            WobblyAchievement.COMPLETE_JOB_FARM_HARVEST,
+            // Token: 0x04002170 RID: 8560
+            WobblyAchievement.PROCESS_URANIUM_IN_MINE_MACHINE,
+            // Token: 0x04002171 RID: 8561
+            WobblyAchievement.BUY_FIRST_PET,
+            // Token: 0x04002172 RID: 8562
+            WobblyAchievement.UNLOCK_GHOST_PET,
+            // Token: 0x04002173 RID: 8563
+            WobblyAchievement.CHOOSE_WISELY,
+            // Token: 0x04002174 RID: 8564
+            WobblyAchievement.COMPLETE_JOB_QUIZ_MASTER,
+            // Token: 0x04002175 RID: 8565
+            WobblyAchievement.COMPLETE_JOB_FIRE_FIGHTER,
+            // Token: 0x04002176 RID: 8566
+            WobblyAchievement.COMPLETE_JOB_WOOD_CUTTER,
+            // Token: 0x04002177 RID: 8567
+            WobblyAchievement.COMPLETE_JOB_SCIENCE_MACHINE,
+            // Token: 0x04002178 RID: 8568
+            WobblyAchievement.COMPLETE_BUILD_UFO_MISSION,
+            // Token: 0x04002179 RID: 8569
+            WobblyAchievement.COMPLETE_FIRST_MUSEUM_COLLECTION,
+            // Token: 0x0400217A RID: 8570
+            WobblyAchievement.COMPLETE_JOB_TAXI,
+            // Token: 0x0400217B RID: 8571
+            WobblyAchievement.COMPLETE_JOB_ICE_CREAM,
+            // Token: 0x0400217C RID: 8572
+            WobblyAchievement.COMPLETE_ANCIENT_TRIALS,
+            // Token: 0x0400217D RID: 8573
+            WobblyAchievement.COMPLETE_JOB_DISCO,
+            // Token: 0x0400217E RID: 8574
+            WobblyAchievement.COMPLETE_JOB_FISHING,
+            // Token: 0x0400217F RID: 8575
+            WobblyAchievement.COLLECT_ALL_FISH_ON_WOBBLY_ISLAND,
+            // Token: 0x04002180 RID: 8576
+            WobblyAchievement.COMPLETE_JELLY_CAR_MISSION,
+            // Token: 0x04002181 RID: 8577
+            WobblyAchievement.COMPLETE_JOB_CONSTRUCTION_RESOURCES,
+            // Token: 0x04002182 RID: 8578
+            WobblyAchievement.COMPLETE_JOB_CONSTRUCTION_BUILDING,
+            // Token: 0x04002183 RID: 8579
+            WobblyAchievement.COMPLETE_JOB_CONSTRUCTION_DESTRUCTION
+
+
+        };
 
         private void Awake()
         {
@@ -72,6 +161,16 @@ namespace WobblyLife_ConsoleCommands
             Debug.Log(text);
             popupTimer = 300;
             popup = text;
+        }
+        
+        public void UnlockAchievements()
+        {
+            PlayerController player = FindObjectOfType<PlayerController>();
+            for (int i = 0; i < achievements.Length; i++)
+            {
+                achievementManager.UnlockAchievement(achievements[i], player);
+            }
+            Log("unlocked all achievements, enjoy (; <3 daltonyx");
         }
 
         public void Update()
@@ -149,6 +248,10 @@ namespace WobblyLife_ConsoleCommands
                     if (command.ToLower().StartsWith("/test"))
                     {
                         Log("what the fuck man");
+                    }
+                    else if (command.ToLower().StartsWith("/achget"))
+                    {
+                        UnlockAchievements();
                     }
 
                     showConsole = false;
@@ -345,10 +448,6 @@ namespace WobblyLife_ConsoleCommands
                 }
 
             }
-
-            
         }
-
-        
     }
 }
