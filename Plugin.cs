@@ -123,6 +123,30 @@ namespace WobblyLife_ConsoleCommands
 
         }
 
+        public GameObject GetPlayerCharacter()
+        {
+            return GameObject.FindGameObjectsWithTag("Player")[0];
+        }
+
+        public void Teleport(Vector3 locationPos)
+        {
+            GameObject player = GetPlayerCharacter();
+            player.transform.position = locationPos;
+            Log($"teleported to\n{locationPos}");
+        }
+        
+        public void TeleportAll(Vector3 locationPos)
+        {
+            GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+            float yOffset = 0f;
+            for (int i = 0; i < players.Length; i++)
+            {
+                players[i].transform.position = new Vector3(locationPos.x, locationPos.y + yOffset, locationPos.z);
+                yOffset += 1.5f;
+            }
+            Log($"teleported all to\n{locationPos}");
+        }
+
         public void Start()
         {
             
@@ -131,31 +155,39 @@ namespace WobblyLife_ConsoleCommands
 
         public void AttachConsole()
         {
-            canvas = GameObject.Find("Game-Canvas").GetComponent<Canvas>();
-            commandObject = new GameObject("commandObject");
-            commandObject.transform.SetParent(canvas.transform);
-            commandObject.AddComponent<TextMeshProUGUI>();
-            commandText = commandObject.GetComponent<TextMeshProUGUI>();
-            commandText.text = "press / to open console";
-            commandText.fontSize = 40;
-            commandText.color = Color.white;
-            commandText.fontStyle = FontStyles.Bold;
-            commandText.alignment = TextAlignmentOptions.Center;
-            commandText.rectTransform.position = new Vector3(0,-500, 0);
-            commandText.enableWordWrapping = false;
+            try
+            {
+                canvas = GameObject.Find("Game-Canvas").GetComponent<Canvas>();
+                commandObject = new GameObject("commandObject");
+                commandObject.transform.SetParent(canvas.transform);
+                commandObject.AddComponent<TextMeshProUGUI>();
+                commandText = commandObject.GetComponent<TextMeshProUGUI>();
+                commandText.text = "press / to open console";
+                commandText.fontSize = 40;
+                commandText.color = Color.white;
+                commandText.fontStyle = FontStyles.Bold;
+                commandText.alignment = TextAlignmentOptions.Center;
+                commandText.rectTransform.position = new Vector3(0,-500, 0);
+                commandText.enableWordWrapping = false;
 
-            popupObject = new GameObject("popupObject");
-            popupObject.transform.SetParent(canvas.transform);
-            popupObject.AddComponent<TextMeshProUGUI>();
-            popupText = popupObject.GetComponent<TextMeshProUGUI>();
-            popupText.text = "";
-            popupText.fontSize = 40;
-            popupText.color = Color.white;
-            commandText.fontStyle = FontStyles.Bold;
-            popupText.alignment = TextAlignmentOptions.Center;
-            popupText.rectTransform.position = new Vector3(0, 0, 0);
-            popupText.enableWordWrapping = false;
-            Debug.Log("attached console");
+                popupObject = new GameObject("popupObject");
+                popupObject.transform.SetParent(canvas.transform);
+                popupObject.AddComponent<TextMeshProUGUI>();
+                popupText = popupObject.GetComponent<TextMeshProUGUI>();
+                popupText.text = "";
+                popupText.fontSize = 40;
+                popupText.color = Color.white;
+                commandText.fontStyle = FontStyles.Bold;
+                popupText.alignment = TextAlignmentOptions.Center;
+                popupText.rectTransform.position = new Vector3(0, 0, 0);
+                popupText.enableWordWrapping = false;
+                Debug.Log("attached console");
+            }
+            catch(System.Exception e)
+            {
+                //Debug.Log("failed to attach console");
+            }
+            
 
         }
 
@@ -242,6 +274,17 @@ namespace WobblyLife_ConsoleCommands
                 achievementManager.UnlockAchievement(achievements[i], player);
             }
             Log("unlocked all achievements, enjoy (; <3 daltonyx");
+        }
+
+        public void Free()
+        {
+            ShopPropItem[] propItems;
+            propItems = FindObjectsOfType<ShopPropItem>();
+            for (int i = 0; i < propItems.Length; i++)
+            {
+                propItems[i].cost = 0;
+            }
+
         }
 
         public void Update()
@@ -335,6 +378,51 @@ namespace WobblyLife_ConsoleCommands
                         }
                         AddMoney(choice);
                     }
+                    else if (command.ToLower().StartsWith("/tp"))
+                    {
+                        string[] strings = command.Split();
+                        int choice = int.Parse(strings[1]);
+
+                        GameObject devTeleportManager = GameObject.Find("DeveloperTeleportManager");
+
+                        if (choice > devTeleportManager.transform.childCount - 1 || choice < 0)
+                        {
+                            Log("Choose a number between 0 and " + (devTeleportManager.transform.childCount - 1));
+                            return;
+                        }
+                        for (int i = 0; i < devTeleportManager.transform.childCount; i++)
+                        {
+                            if (choice == i)
+                            {
+                                Teleport(devTeleportManager.transform.GetChild(i).position);
+                            }
+                        }
+                    }
+                    else if (command.ToLower().StartsWith("/tp2"))
+                    {
+                        string[] strings = command.Split();
+                        int choice = int.Parse(strings[1]);
+
+                        GameObject devTeleportManager = GameObject.Find("DeveloperTeleportManager");
+
+                        if (choice > devTeleportManager.transform.childCount - 1 || choice < 0)
+                        {
+                            Log("Choose a number between 0 and " + (devTeleportManager.transform.childCount - 1));
+                            return;
+                        }
+                        for (int i = 0; i < devTeleportManager.transform.childCount; i++)
+                        {
+                            if (choice == i)
+                            {
+                                TeleportAll(devTeleportManager.transform.GetChild(i).position);
+                            }
+                        }
+                    }
+                    else if (command.ToLower().StartsWith("/free"))
+                    {
+                        Free();
+                    }
+            
 
                     showConsole = false;
                     command = "press / to open console";
