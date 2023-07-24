@@ -40,6 +40,9 @@
     <Reference Include="steamworks">
 		  <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Wobbly Life\Wobbly Life_Data\Managed\Facepunch.Steamworks.Win64.dll</HintPath>
 	  </Reference>
+    <Reference Include="steamworks">
+		  <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Wobbly Life\Wobbly Life_Data\Managed\Unity.Addressables.dll</HintPath>
+	  </Reference>
   
   
   

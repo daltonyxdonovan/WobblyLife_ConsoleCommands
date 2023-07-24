@@ -23,7 +23,8 @@ namespace WobblyLife_ConsoleCommands
         bool showConsole = false;
         bool doneStartingUp = false;
         RewardMoneyData rewardMoneyData = FindObjectOfType<RewardMoneyData>();
-        
+        public RewardManager rewardManager = FindObjectOfType<RewardManager>();
+        PlayerControllerEmployment pce = FindObjectOfType<PlayerControllerEmployment>();
         WobblyAchievement[] achievements = {
             WobblyAchievement.COMPLETE_JOB_JELLY,
 	        // Token: 0x0400215A RID: 8538
@@ -165,14 +166,72 @@ namespace WobblyLife_ConsoleCommands
             popup = text;
         }
         
+        public PlayerController GetPlayer()
+        {
+            return FindObjectOfType<PlayerController>();
+        }
+
+        public void ServerRewardMoneyBag(PlayerController playerController, params object[] args)
+        {
+            int money = (int)args[0];
+            Vector3 vector;
+            if (args.Length > 1)
+            {
+                vector = (Vector3)args[1];
+            }
+            else
+            {
+                Transform playerTransform = playerController.GetPlayerTransform();
+                if (!playerTransform)
+                {
+                    return;
+                }
+                Collider[] componentsInChildren = playerTransform.GetComponentsInChildren<Collider>();
+                if (componentsInChildren.Length == 0)
+                {
+                    return;
+                }
+                Bounds bounds = componentsInChildren[0].bounds;
+                for (int i = 1; i < componentsInChildren.Length; i++)
+                {
+                    bounds.Encapsulate(componentsInChildren[i].bounds);
+                }
+                vector = playerTransform.position + Vector3.up * (2.5f + bounds.extents.y);
+            }
+            Quaternion quaternion;
+            if (args.Length > 2)
+            {
+                quaternion = (Quaternion)args[2];
+            }
+            else
+            {
+                quaternion = Quaternion.identity;
+            }
+            if (money == 0)
+            {
+                return;
+            }
+            if (money < 0)
+            {
+                Debug.LogError("Money Bags cannot contain negative money");
+                return;
+            }
+            NetworkPrefab.SpawnNetworkPrefab("Game/Prefabs/Props/MoneyBag.prefab", delegate(HawkNetworking.HawkNetworkBehaviour moneyNetworkBehaviour)
+            {
+                if (moneyNetworkBehaviour != null)
+                {
+                    MoneyBag component = moneyNetworkBehaviour.GetComponent<MoneyBag>();
+                    if (component)
+                    {
+                        component.SetMoney(money);
+                    }
+                }
+            }, new Vector3?(vector), new Quaternion?(quaternion), null, true, true, false, true);
+        }
+
         public void AddMoney(int amount)
         {
-            //MoneyBag moneyBag = FindObjectOfType<MoneyBag>();
-            //moneyBag.SetMoney(moneyBag.GetMoney() + amount);
-
-            //Log($"added money\n${moneyBag.GetMoney()}");
-            //TreasureJobMission treasureJM = FindObjectOfType<TreasureJobMission>();
-            //moneyBag = treasureJM.treasureMoneySort.prefabs[Random.Range(0, treasureMoneySort.prefabs.Count)];
+            ServerRewardMoneyBag(GetPlayer(), amount);
         }
 
         public void UnlockAchievements()
