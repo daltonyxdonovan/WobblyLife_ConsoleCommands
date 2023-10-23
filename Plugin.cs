@@ -5,19 +5,27 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
 using System.Reflection;
+using JetBrains.Annotations;
+using System.Collections.Generic;
+using System.Linq;
+using HarmonyLib;
 
 namespace WobblyLife_ConsoleCommands
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
+        RagdollController ragdoll;
         AchievementManager achievementManager;
+        float vertSpeed = 0.1f;
+        float flightSpeed = 1f;
+        bool flight = false;
         public Canvas canvas;
         public GameObject commandObject;
         public GameObject popupObject;
         public TextMeshProUGUI commandText;
         public TextMeshProUGUI popupText;
-        public string command = "press / to open console";
+        public string command = "press / or Up arrow to open console";
         public string popup = "";
         public int popupTimer = 0;
         bool showConsole = false;
@@ -27,105 +35,120 @@ namespace WobblyLife_ConsoleCommands
         PlayerControllerEmployment pce = FindObjectOfType<PlayerControllerEmployment>();
         WobblyAchievement[] achievements = {
             WobblyAchievement.COMPLETE_JOB_JELLY,
-	        // Token: 0x0400215A RID: 8538
-            WobblyAchievement.COMPLETE_JOB_PIZZA,
-            // Token: 0x0400215B RID: 8539
-            WobblyAchievement.COMPLETE_JOB_BURGER,
-            // Token: 0x0400215C RID: 8540
-            WobblyAchievement.COMPLETE_JOB_POWER_PLANT,
-            // Token: 0x0400215D RID: 8541
-            WobblyAchievement.COMPLETE_JOB_EMERGENCY,
-            // Token: 0x0400215E RID: 8542
-            WobblyAchievement.COMPLETE_JOB_NEWROUND,
-            // Token: 0x0400215F RID: 8543
-            WobblyAchievement.COMPLETE_JOB_FURNITURE,
-            // Token: 0x04002160 RID: 8544
-            WobblyAchievement.COMPLETE_JOB_PIZZA_UFO,
-            // Token: 0x04002161 RID: 8545
-            WobblyAchievement.COMPLETE_JOB_GARBAGE,
-            // Token: 0x04002162 RID: 8546
-            WobblyAchievement.COMPLETE_RACE_KART,
-            // Token: 0x04002163 RID: 8547
-            WobblyAchievement.COMPLETE_RACE_PLANE,
-            // Token: 0x04002164 RID: 8548
-            WobblyAchievement.COMPLETE_RACE_BOAT,
-            // Token: 0x04002165 RID: 8549
-            WobblyAchievement.COMPLETE_TEMPLE_PUZZLE,
-            // Token: 0x04002166 RID: 8550
-            WobblyAchievement.BUY_FIRST_HOUSE,
-            // Token: 0x04002167 RID: 8551
-            WobblyAchievement.HAVE_1000_IN_THE_BANK,
-            // Token: 0x04002168 RID: 8552
-            WobblyAchievement.HAVE_5000_IN_THE_BANK,
-            // Token: 0x04002169 RID: 8553
-            WobblyAchievement.HAVE_10000_IN_THE_BANK,
-            // Token: 0x0400216A RID: 8554
-            WobblyAchievement.COLLECT_ALL_PRESENTS_ON_WOBBLY_ISLAND,
-            // Token: 0x0400216B RID: 8555
-            WobblyAchievement.FEED_MONSTER_25_TOXIC_BARRELS,
-            // Token: 0x0400216C RID: 8556
-            WobblyAchievement.FEED_MONSTER_50_TOXIC_BARRELS,
-            // Token: 0x0400216D RID: 8557
-            WobblyAchievement.COMPLETE_JOB_FARM_PLOW,
-            // Token: 0x0400216E RID: 8558
-            WobblyAchievement.COMPLETE_JOB_FARM_SEED,
-            // Token: 0x0400216F RID: 8559
-            WobblyAchievement.COMPLETE_JOB_FARM_HARVEST,
-            // Token: 0x04002170 RID: 8560
-            WobblyAchievement.PROCESS_URANIUM_IN_MINE_MACHINE,
-            // Token: 0x04002171 RID: 8561
-            WobblyAchievement.BUY_FIRST_PET,
-            // Token: 0x04002172 RID: 8562
-            WobblyAchievement.UNLOCK_GHOST_PET,
-            // Token: 0x04002173 RID: 8563
-            WobblyAchievement.CHOOSE_WISELY,
-            // Token: 0x04002174 RID: 8564
-            WobblyAchievement.COMPLETE_JOB_QUIZ_MASTER,
-            // Token: 0x04002175 RID: 8565
-            WobblyAchievement.COMPLETE_JOB_FIRE_FIGHTER,
-            // Token: 0x04002176 RID: 8566
-            WobblyAchievement.COMPLETE_JOB_WOOD_CUTTER,
-            // Token: 0x04002177 RID: 8567
-            WobblyAchievement.COMPLETE_JOB_SCIENCE_MACHINE,
-            // Token: 0x04002178 RID: 8568
-            WobblyAchievement.COMPLETE_BUILD_UFO_MISSION,
-            // Token: 0x04002179 RID: 8569
-            WobblyAchievement.COMPLETE_FIRST_MUSEUM_COLLECTION,
-            // Token: 0x0400217A RID: 8570
-            WobblyAchievement.COMPLETE_JOB_TAXI,
-            // Token: 0x0400217B RID: 8571
-            WobblyAchievement.COMPLETE_JOB_ICE_CREAM,
-            // Token: 0x0400217C RID: 8572
-            WobblyAchievement.COMPLETE_ANCIENT_TRIALS,
-            // Token: 0x0400217D RID: 8573
-            WobblyAchievement.COMPLETE_JOB_DISCO,
-            // Token: 0x0400217E RID: 8574
-            WobblyAchievement.COMPLETE_JOB_FISHING,
-            // Token: 0x0400217F RID: 8575
-            WobblyAchievement.COLLECT_ALL_FISH_ON_WOBBLY_ISLAND,
-            // Token: 0x04002180 RID: 8576
-            WobblyAchievement.COMPLETE_JELLY_CAR_MISSION,
-            // Token: 0x04002181 RID: 8577
-            WobblyAchievement.COMPLETE_JOB_CONSTRUCTION_RESOURCES,
-            // Token: 0x04002182 RID: 8578
-            WobblyAchievement.COMPLETE_JOB_CONSTRUCTION_BUILDING,
-            // Token: 0x04002183 RID: 8579
-            WobblyAchievement.COMPLETE_JOB_CONSTRUCTION_DESTRUCTION
+	        // Token: 0x040024C0 RID: 9408
+	        WobblyAchievement.COMPLETE_JOB_PIZZA,
+	        // Token: 0x040024C1 RID: 9409
+	        WobblyAchievement.COMPLETE_JOB_BURGER,
+	        // Token: 0x040024C2 RID: 9410
+	        WobblyAchievement.COMPLETE_JOB_POWER_PLANT,
+	        // Token: 0x040024C3 RID: 9411
+	        WobblyAchievement.COMPLETE_JOB_EMERGENCY,
+	        // Token: 0x040024C4 RID: 9412
+	        WobblyAchievement.COMPLETE_JOB_NEWROUND,
+	        // Token: 0x040024C5 RID: 9413
+	        WobblyAchievement.COMPLETE_JOB_FURNITURE,
+	        // Token: 0x040024C6 RID: 9414
+	        WobblyAchievement.COMPLETE_JOB_PIZZA_UFO,
+	        // Token: 0x040024C7 RID: 9415
+	        WobblyAchievement.COMPLETE_JOB_GARBAGE,
+	        // Token: 0x040024C8 RID: 9416
+	        WobblyAchievement.COMPLETE_RACE_KART,
+	        // Token: 0x040024C9 RID: 9417
+	        WobblyAchievement.COMPLETE_RACE_PLANE,
+	        // Token: 0x040024CA RID: 9418
+	        WobblyAchievement.COMPLETE_RACE_BOAT,
+	        // Token: 0x040024CB RID: 9419
+	        WobblyAchievement.COMPLETE_TEMPLE_PUZZLE,
+	        // Token: 0x040024CC RID: 9420
+	        WobblyAchievement.BUY_FIRST_HOUSE,
+	        // Token: 0x040024CD RID: 9421
+	        WobblyAchievement.HAVE_1000_IN_THE_BANK,
+	        // Token: 0x040024CE RID: 9422
+	        WobblyAchievement.HAVE_5000_IN_THE_BANK,
+	        // Token: 0x040024CF RID: 9423
+	        WobblyAchievement.HAVE_10000_IN_THE_BANK,
+	        // Token: 0x040024D0 RID: 9424
+	        WobblyAchievement.COLLECT_ALL_PRESENTS_ON_WOBBLY_ISLAND,
+	        // Token: 0x040024D1 RID: 9425
+	        WobblyAchievement.FEED_MONSTER_25_TOXIC_BARRELS,
+	        // Token: 0x040024D2 RID: 9426
+	        WobblyAchievement.FEED_MONSTER_50_TOXIC_BARRELS,
+	        // Token: 0x040024D3 RID: 9427
+	        WobblyAchievement.COMPLETE_JOB_FARM_PLOW,
+	        // Token: 0x040024D4 RID: 9428
+	        WobblyAchievement.COMPLETE_JOB_FARM_SEED,
+	        // Token: 0x040024D5 RID: 9429
+	        WobblyAchievement.COMPLETE_JOB_FARM_HARVEST,
+	        // Token: 0x040024D6 RID: 9430
+	        WobblyAchievement.PROCESS_URANIUM_IN_MINE_MACHINE,
+	        // Token: 0x040024D7 RID: 9431
+	        WobblyAchievement.BUY_FIRST_PET,
+	        // Token: 0x040024D8 RID: 9432
+	        WobblyAchievement.UNLOCK_GHOST_PET,
+	        // Token: 0x040024D9 RID: 9433
+	        WobblyAchievement.CHOOSE_WISELY,
+	        // Token: 0x040024DA RID: 9434
+	        WobblyAchievement.COMPLETE_JOB_QUIZ_MASTER,
+	        // Token: 0x040024DB RID: 9435
+	        WobblyAchievement.COMPLETE_JOB_FIRE_FIGHTER,
+	        // Token: 0x040024DC RID: 9436
+	        WobblyAchievement.COMPLETE_JOB_WOOD_CUTTER,
+	        // Token: 0x040024DD RID: 9437
+	        WobblyAchievement.COMPLETE_JOB_SCIENCE_MACHINE,
+	        // Token: 0x040024DE RID: 9438
+	        WobblyAchievement.COMPLETE_BUILD_UFO_MISSION,
+	        // Token: 0x040024DF RID: 9439
+	        WobblyAchievement.COMPLETE_FIRST_MUSEUM_COLLECTION,
+	        // Token: 0x040024E0 RID: 9440
+	        WobblyAchievement.COMPLETE_JOB_TAXI,
+	        // Token: 0x040024E1 RID: 9441
+	        WobblyAchievement.COMPLETE_JOB_ICE_CREAM,
+	        // Token: 0x040024E2 RID: 9442
+	        WobblyAchievement.COMPLETE_ANCIENT_TRIALS,
+	        // Token: 0x040024E3 RID: 9443
+	        WobblyAchievement.COMPLETE_JOB_DISCO,
+	        // Token: 0x040024E4 RID: 9444
+	        WobblyAchievement.COMPLETE_JOB_FISHING,
+	        // Token: 0x040024E5 RID: 9445
+	        WobblyAchievement.COLLECT_ALL_FISH_ON_WOBBLY_ISLAND,
+	        // Token: 0x040024E6 RID: 9446
+	        WobblyAchievement.COMPLETE_JELLY_CAR_MISSION,
+	        // Token: 0x040024E7 RID: 9447
+	        WobblyAchievement.COMPLETE_JOB_CONSTRUCTION_RESOURCES,
+	        // Token: 0x040024E8 RID: 9448
+	        WobblyAchievement.COMPLETE_JOB_CONSTRUCTION_BUILDING,
+	        // Token: 0x040024E9 RID: 9449
+	        WobblyAchievement.COMPLETE_JOB_CONSTRUCTION_DESTRUCTION,
+	        // Token: 0x040024EA RID: 9450
+	        WobblyAchievement.COMPLETE_JOB_WEATHER,
+	        // Token: 0x040024EB RID: 9451
+	        WobblyAchievement.COMPLETE_JOB_ARTSTUDIO,
+	        // Token: 0x040024EC RID: 9452
+	        WobblyAchievement.COMPLETE_MISSION_DREAM,
+	        // Token: 0x040024ED RID: 9453
+	        WobblyAchievement.COMPLETE_MISSION_WEATHERMACHINE
 
 
         };
+        GameObject player;
+        Vector3 playerPos = new Vector3(0, 0, 0);
+
+
 
         private void Awake()
         {
-            // Plugin startup logic
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
             achievementManager = AchievementManager.Instance;
-
         }
 
         public GameObject GetPlayerCharacter()
         {
-            return GameObject.FindGameObjectsWithTag("Player")[0];
+            GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+            if (players.Length > 0)
+            {
+                return GameObject.FindGameObjectsWithTag("Player")[0];
+            }
+            return null;
         }
 
         public void Teleport(Vector3 locationPos)
@@ -147,10 +170,36 @@ namespace WobblyLife_ConsoleCommands
             Log($"teleported all to\n{locationPos}");
         }
 
-        public void Start()
+        public void ChangeSpeed(float mult)
         {
-            
+            PlayerCharacterMovement playerCharacterMovement = GameObject.Find("PlayerCharacter(Clone)").GetComponent<PlayerCharacterMovement>();
+            playerCharacterMovement.SetSpeedMultiplier(mult);
+        }
 
+        public void GetAllClothes()
+        {
+            ClothingManager clothingManager = ClothingManager.Instance;
+
+            //GetAllClothes() returns ClothingPiece[] which is an array of all the clothing pieces, we need it to be a list
+            
+            List<ClothingPiece> unlockedClothing = new List<ClothingPiece>();
+            unlockedClothing = clothingManager.GetAllClothes(ClothingSelectionType.Hat).ToList();
+            unlockedClothing.AddRange(clothingManager.GetAllClothes(ClothingSelectionType.Bottom).ToList());
+            unlockedClothing.AddRange(clothingManager.GetAllClothes(ClothingSelectionType.Outfit).ToList());
+            unlockedClothing.AddRange(clothingManager.GetAllClothes(ClothingSelectionType.Top).ToList());
+
+            //PlayerControllerUnlocker.UnlockClothing(object caller, ClothingPiece clothingPiece) is the function that unlocks the clothing
+            //we need to call it for every clothing piece in the list
+
+            PlayerController playerController = GetPlayer();
+            PlayerControllerUnlocker playerControllerUnlocker = new PlayerControllerUnlocker();
+            for (int i = 0; i < unlockedClothing.Count; i++)
+            {
+                playerControllerUnlocker.UnlockClothing(this, unlockedClothing[i]);
+            }
+
+
+            Log("Unlocked all clothing! - WIP");
         }
 
         public void AttachConsole()
@@ -285,10 +334,68 @@ namespace WobblyLife_ConsoleCommands
                 propItems[i].cost = 0;
             }
 
+            var instance = new Harmony("tester");
+            instance.PatchAll(typeof(PatchPetShop));
+
+            Log("free has been ran- test patching");
+
+        }
+
+        public void UnlockAllHouses()
+        {
+            SavePlayerPersistentData playerPersistentData = FindObjectOfType<PlayerController>().GetPlayerPersistentData();
+            if (playerPersistentData == null)
+            {
+                Log("Can't find PlayerController :(");
+                return;
+            }
+            List<System.Guid> houses = playerPersistentData.HousesData.GetHouses(SceneManager.GetActiveScene());
+            PlayerControllerUnlocker playerControllerUnlocker = FindObjectOfType<PlayerControllerUnlocker>();
+            if (playerControllerUnlocker == null)
+            {
+                Log("Can't find PlayerControllerUnlocker :(");
+                return;
+            }
+            for (int i = 0; i < houses.Count; i++)
+            {
+                UnitySingleton<BuyableHouseManager>.Instance.HouseUnlocked(FindObjectOfType<PlayerController>(), houses[i]);
+                PlayerControllerUnlocker.PlayerControllerUnlockerHouseDelegate playerControllerUnlockerHouseDelegate = playerControllerUnlocker.onHouseUnlocked;
+                if (playerControllerUnlockerHouseDelegate == null)
+		        {
+			        Log("PlayerControllerUnlockerHouseDelegate was not found :(");
+		        }
+		        playerControllerUnlockerHouseDelegate(SceneManager.GetActiveScene(), houses[i]);
+                playerPersistentData.HousesData.AddHouse(SceneManager.GetActiveScene(), houses[i]);
+                playerControllerUnlocker.UnlockHouse(SceneManager.GetActiveScene(), houses[i]);
+                
+            }
+            Log("Unlocked all houses(?) - WIP");
+
+        }
+
+        public GameObject FindWaypoint()
+        {
+            Log(GetPlayerName());
+            GameObject freemodePlayerController = GameObject.Find("FreemodePlayerController_" + GetPlayerName());
+            
+            if (freemodePlayerController.transform.childCount > 0)
+                return freemodePlayerController.transform.GetChild(0).gameObject;
+
+            Log("Couldn't find waypoint");
+            return null;
+        }
+
+        public string GetPlayerName()
+        {
+            PlayerController pc = FindObjectOfType<PlayerController>();
+            Log(pc.GetPlayerName());
+            return pc.GetPlayerName();
         }
 
         public void Update()
         {
+            
+            
             
             if (SceneManager.GetActiveScene().name == "MainMenu")
             {
@@ -306,6 +413,11 @@ namespace WobblyLife_ConsoleCommands
             }
             else
             {
+
+
+
+
+
                 popupText.rectTransform.position = new Vector3(0, 0, 0);
                 commandText.rectTransform.position = new Vector3(0, 0, 0);
                 popupText.rectTransform.localScale = new Vector3(1, 1, 1);
@@ -327,7 +439,7 @@ namespace WobblyLife_ConsoleCommands
                 popupText.text = popup;
 
 
-                if (Input.GetKeyDown(KeyCode.Slash))
+                if (Input.GetKeyDown(KeyCode.Slash) || Input.GetKeyDown(KeyCode.UpArrow))
                 {
                     showConsole = !showConsole;
                     if (showConsole)
@@ -338,7 +450,7 @@ namespace WobblyLife_ConsoleCommands
                     else
                     {
                         //commandText.color = Color.clear;
-                        command = "press / to enter commands";
+                        command = "press / or Up arrow to enter commands";
                     }
                     commandText.text = command;
                 }
@@ -359,15 +471,15 @@ namespace WobblyLife_ConsoleCommands
 
                 if (Input.GetKeyDown(KeyCode.Return))
                 {
-                    if (command.ToLower().StartsWith("/test"))
+                    if (command.ToLower().StartsWith("/test") || command.ToLower().StartsWith("test"))
                     {
                         Log("what the fuck man");
                     }
-                    else if (command.ToLower().StartsWith("/achget"))
+                    else if (command.ToLower().StartsWith("/achget") || command.ToLower().StartsWith("achget"))
                     {
                         UnlockAchievements();
                     }
-                    else if (command.ToLower().StartsWith("/cash"))
+                    else if (command.ToLower().StartsWith("/cash") || command.ToLower().StartsWith("cash"))
                     {
                         string[] strings = command.Split();
                         int choice = int.Parse(strings[1]);
@@ -378,7 +490,15 @@ namespace WobblyLife_ConsoleCommands
                         }
                         AddMoney(choice);
                     }
-                    else if (command.ToLower().StartsWith("/tp"))
+                    else if (command.ToLower().StartsWith("/speed") || command.ToLower().StartsWith("speed"))
+                    {
+                        string[] strings = command.Split();
+                        float choice = float.Parse(strings[1]);
+
+                        ChangeSpeed(choice);
+                        Log("Speed multiplier set to " + choice + "!");
+                    }
+                    else if (command.ToLower().StartsWith("/tp") || command.ToLower().StartsWith("tp"))
                     {
                         string[] strings = command.Split();
                         int choice = int.Parse(strings[1]);
@@ -398,7 +518,7 @@ namespace WobblyLife_ConsoleCommands
                             }
                         }
                     }
-                    else if (command.ToLower().StartsWith("/tp2"))
+                    else if (command.ToLower().StartsWith("/tp2") || command.ToLower().StartsWith("tp2"))
                     {
                         string[] strings = command.Split();
                         int choice = int.Parse(strings[1]);
@@ -418,14 +538,165 @@ namespace WobblyLife_ConsoleCommands
                             }
                         }
                     }
-                    else if (command.ToLower().StartsWith("/free"))
+                    else if (command.ToLower().StartsWith("/pets") || command.ToLower().StartsWith("pets"))
                     {
                         Free();
                     }
-            
+                    else if (command.ToLower().StartsWith("/house") || command.ToLower().StartsWith("house"))
+                    {
+                        var instance = new Harmony("tester");
+                        instance.PatchAll(typeof(PatchPlayerControllerUnlockerHouse));
+
+                        Log("All houses are unlocked - WIP");
+
+                        UnlockAllHouses();
+                    }
+                    else if (command.ToLower().StartsWith("/car") || command.ToLower().StartsWith("car"))
+                    {
+                        var instance = new Harmony("tester");
+                        instance.PatchAll(typeof(PatchPlayerControllerUnlockerVehicle));
+
+                        Log("All vehicles are unlocked - WIP");
+                    }
+                    else if (command.ToLower().StartsWith("/flightspeed") || command.ToLower().StartsWith("flightspeed"))
+                    {
+                        string[] strings = command.Split();
+                        float choice = float.Parse(strings[1]);
+
+                        if (choice < 1 || choice > 100)
+                        {
+                            Log("Choose an amount 1 - 100\nExample: /flightspeed 4.4");
+                            return;
+                        }
+
+                        flightSpeed = choice;
+                        vertSpeed = choice/10;
+                        Log("FlightSpeed set to " + flightSpeed + "\nVerticalSpeed set to " + vertSpeed);
+                    }
+                    else if (command.ToLower().StartsWith("/clothes") || command.ToLower().StartsWith("clothes"))
+                    {
+                        var instance = new Harmony("tester");
+                        instance.PatchAll(typeof(PatchPlayerControllerUnlockerClothing));
+                        instance.PatchAll(typeof(PatchClothesShop));
+                        Log("All clothes are unlocked - WIP");
+                    }
+                    else if (command.ToLower().StartsWith("/presents") || command.ToLower().StartsWith("presents"))
+                    {
+                        var instance = new Harmony("tester");
+                        instance.PatchAll(typeof(PatchPlayerControllerUnlockerPresent));
+
+                        Log("All presents are unlocked - WIP");
+                    }
+                    else if (command.ToLower().StartsWith("flight") || command.ToLower().StartsWith("/flight"))
+                    {
+                        if (!player)
+                            player = GetPlayerCharacter();
+                        bool choice = bool.Parse((command.Split()[1]));
+
+                        if (choice == true || choice == false)
+                        {
+                            if (choice)
+                            {
+                                
+                                flight = true;
+                            }
+                            if (!choice)
+                            {
+                                
+                                flight = false;
+                            }
+                        }
+                        else
+                        {
+                            Log("command error> true or false only");
+                        }
+                    }
+                    else if (command.ToLower().StartsWith("tp3") || command.ToLower().StartsWith("/tp3"))
+                    {
+                        GameObject waypoint = new GameObject();
+                        Log(GetPlayerName());
+                        waypoint = FindWaypoint();
+                        if (waypoint != null)
+                        {
+                            Teleport(waypoint.transform.position);
+                            Log("Teleported to waypoint");
+                        }
+                        else
+                        {
+                            Log("No waypoint found");
+                        }
+
+                    }
+
 
                     showConsole = false;
-                    command = "press / to open console";
+                    command = "press / or Up arrow to open console";
+                }
+
+
+                if (SceneManager.GetActiveScene().name == "WobblyIsland")
+                {
+                    if (!player)
+                        player = GetPlayerCharacter();
+                    if (flight && player)
+                    {
+                        if (ragdoll == null)
+                        {
+                            if (player == null)
+                                player = GetPlayerCharacter();
+                            if (player != null)
+                               ragdoll = player.GetComponent<RagdollController>();
+                        }
+                        else
+                        {
+                            if (ragdoll != null)
+                                ragdoll.LockRagdollState();
+                            else
+                                Log("Can't find ragdoll!");
+                        }
+                        if (Input.GetKey(KeyCode.Space))
+                        {
+                            playerPos = new Vector3(playerPos.x, playerPos.y + vertSpeed, playerPos.z);
+                        }
+                        if (Input.GetKey(KeyCode.LeftShift))
+                        {
+                            playerPos = new Vector3(playerPos.x, playerPos.y - vertSpeed, playerPos.z);
+                        }
+                        // Get the vertical and horizontal input axes
+                        float verticalInput = Input.GetAxis("Vertical");
+                        float horizontalInput = Input.GetAxis("Horizontal");
+
+                        // Get the camera's forward and right vectors
+                        Vector3 cameraForward = Camera.main.transform.forward;
+                        Vector3 cameraRight = Camera.main.transform.right;
+
+                        // Calculate the movement direction relative to the camera's orientation
+                        Vector3 movementDirection = (cameraForward * verticalInput) + (cameraRight * horizontalInput);
+
+                        // Set the y component to 0 to restrict movement to the x-z plane
+                        movementDirection.y = 0f;
+
+                        // Normalize the vector to ensure consistent movement speed
+                        movementDirection.Normalize();
+
+                        //multiply by flightSpeed
+                        movementDirection *= flightSpeed;
+
+                        // Move the player in the calculated direction
+                        Vector3 translation = movementDirection * (vertSpeed * 40) * Time.fixedDeltaTime;
+
+                        playerPos += translation;
+
+                        if (!player)
+                            player = GetPlayerCharacter();
+                        player.transform.position = playerPos;
+                    }
+                    else if (!flight && player)
+                    {
+                        if (!player)
+                            player = GetPlayerCharacter();
+                        playerPos = player.transform.position;
+                    }
                 }
 
                 if (showConsole)
@@ -618,6 +889,123 @@ namespace WobblyLife_ConsoleCommands
                 }
 
             }
+        }
+
+        
+    }
+
+    class PatchPetShop
+    {
+        [HarmonyPatch(typeof(PetShop), "IsFree")] // Specify target method with HarmonyPatch attribute
+        [HarmonyPrefix]
+        static bool IsFreePrefix(ref bool __result)
+        {
+            __result = true;
+            return false;
+        }
+
+        [HarmonyPatch(typeof(PetShop), "CanAfford")] // Specify target method with HarmonyPatch attribute
+        [HarmonyPrefix]
+        static bool CanAffordPrefix(ref bool __result)
+        {
+            __result = false;
+            return false;
+        }
+
+        [HarmonyPatch(typeof(PetShop), "GetPetCost")] // Specify target method with HarmonyPatch attribute
+        [HarmonyPrefix]
+        static bool GetPetCostPrefix(ref int __result)
+        {
+            __result = 0;
+            return false;
+        }
+    }
+
+    class PatchPlayerControllerUnlockerClothing
+    {
+        [HarmonyPatch(typeof(PlayerControllerUnlocker), "IsClothingUnlocked")] // Specify target method with HarmonyPatch attribute
+        [HarmonyPrefix]
+        static bool IsClothingUnlockedPrefix(ref bool __result)
+        {
+		    __result = true;
+            return false;
+        }
+    }
+
+    class PatchClothesShop
+    {
+        [HarmonyPatch(typeof(ClothesShop), "GetOverallPrice")] // Specify target method with HarmonyPatch attribute
+        [HarmonyPrefix]
+        static bool GetOverallPricePrefix(ref int __result)
+        {
+		    __result = 0;
+            return false;
+        }
+
+        [HarmonyPatch(typeof(ClothesShop), "GetItemPrice")] // Specify target method with HarmonyPatch attribute
+        [HarmonyPrefix]
+        static bool GetItemPricePrefix(ref int __result)
+        {
+		    __result = 0;
+            return false;
+        }
+
+    }
+
+    class PatchPlayerControllerUnlockerVehicle
+    {
+        [HarmonyPatch(typeof(PlayerControllerUnlocker), "IsVehicleUnlocked", new System.Type[] {typeof(PlayerVehicle) })] // Specify target method with HarmonyPatch attribute
+        [HarmonyPrefix]
+        static bool IsVehicleUnlockedPrefix(ref PlayerVehicle vehicle, ref bool __result)
+        {
+		    __result = true;
+            return false;
+        }
+
+         [HarmonyPatch(typeof(PlayerControllerUnlocker), "IsVehicleUnlocked", new System.Type[] {typeof(System.Guid) })] // Specify target method with HarmonyPatch attribute
+        [HarmonyPrefix]
+        static bool IsVehicleUnlocked2Prefix(ref System.Guid guid, ref bool __result)
+        {
+		    __result = true;
+            return false;
+        }
+    }
+
+    class PatchPlayerControllerUnlockerPresent
+    {
+        [HarmonyPatch(typeof(PlayerControllerUnlocker), "IsPresentUnlocked")] // Specify target method with HarmonyPatch attribute
+        [HarmonyPrefix]
+        static bool IsPresentUnlockedPrefix(ref bool __result)
+        {
+		    __result = true;
+            return false;
+        }
+
+        [HarmonyPatch(typeof(PlayerControllerUnlocker), "HasUnlockedAllPresentsInActiveScene")] // Specify target method with HarmonyPatch attribute
+        [HarmonyPrefix]
+        static bool HasUnlockedAllPresentsInActiveScenePrefix(ref bool __result)
+        {
+		    __result = true;
+            return false;
+        }
+    }
+
+    class PatchPlayerControllerUnlockerHouse
+    {
+        [HarmonyPatch(typeof(PlayerControllerUnlocker), "IsHouseUnlocked", new System.Type[] { typeof(Scene), typeof(System.Guid) })]
+        [HarmonyPrefix]
+        static bool IsHouseUnlockedPrefix(ref Scene scene, ref System.Guid houseGUID, ref bool __result)
+        {
+            __result = true;
+            return false;
+        }
+
+        [HarmonyPatch(typeof(PlayerControllerUnlocker), "IsHouseUnlocked", new System.Type[] { typeof(BuyableHouse) })]
+        [HarmonyPrefix]
+        static bool IsHouseUnlocked2Prefix(ref BuyableHouse house, ref bool __result)
+        {
+            __result = true;
+            return false;
         }
     }
 }
