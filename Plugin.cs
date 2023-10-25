@@ -30,6 +30,10 @@ namespace WobblyLife_ConsoleCommands
             }
         }
 
+
+
+
+
         RagdollController ragdoll;
         AchievementManager achievementManager;
         float vertSpeed = 0.1f;
@@ -151,13 +155,22 @@ namespace WobblyLife_ConsoleCommands
         bool returnedFromGame = false;
         bool automatic = false;
         public int peopleAllowed = 10;
-        public TextMeshProUGUI playerLimitText;fadfdafadf
+        public TextMeshProUGUI playerLimitText;
+
+
+
+
+
+
+
+
+
+
 
         public int GetPeopleAllowed()
         {
             return peopleAllowed;
         }
-
 
         private void Awake()
         {
@@ -442,6 +455,35 @@ namespace WobblyLife_ConsoleCommands
             Log(pc.GetPlayerName());
             return pc.GetPlayerName();
         }
+        
+        public void SpawnTextPet(string text)
+        {
+
+            Pet petPrefab = new Pet();
+            petPrefab.Setup(GetPlayer());
+            petPrefab.SetPetName(text);
+            petPrefab.SetPetNameVisible(true);
+            Color transparent = new Color(0, 0, 0, 0);
+            petPrefab.SetColour(transparent);
+            
+            PetData petData = new PetData();
+            petData.petName = text;
+            petData.petColor = transparent;
+            petData.guid = new System.Guid();
+
+            if (petPrefab)
+            {
+                
+                PlayerControllerPet playerControllerPet = GetPlayer().GetPlayerControllerPet();
+                if (playerControllerPet)
+                {
+                        
+                    playerControllerPet.SetPetSlot(0, petPrefab, new PetData?(petData));
+                    playerControllerPet.SetActivePet(0);
+                }
+                
+            }
+        }
 
         public void Update()
         {
@@ -586,6 +628,29 @@ namespace WobblyLife_ConsoleCommands
                     else if (command.ToLower().StartsWith("/achget") || command.ToLower().StartsWith("achget"))
                     {
                         UnlockAchievements();
+                    }
+                    else if (command.ToLower().StartsWith("/chat") || command.ToLower().StartsWith("chat"))
+                    {
+                        string[] strings = command.Split();
+                        //every index of strings that is not 0 is the _same string_
+                        string message = "";
+                        
+                        for (int i = 0; i < strings.Length; i++)
+                        {
+
+                            message += strings[i];
+                            message += " ";
+
+                        }
+                        Log("message to spawn: " + message);
+                        SpawnTextPet(message);
+                        Log("Spawned text pet? WIP");
+
+                    }
+                    else if (command.ToLower().StartsWith("/indestructible") || command.ToLower().StartsWith("indestructible"))
+                    {
+                        var instance = new Harmony("tester");
+                        instance.PatchAll(typeof(PatchPlayerVehicle));
                     }
                     else if (command.ToLower().StartsWith("/cash") || command.ToLower().StartsWith("cash"))
                     {
@@ -1041,8 +1106,13 @@ namespace WobblyLife_ConsoleCommands
             }
         }
 
-        
     }
+
+
+
+
+
+
 
     class PatchPetShop
     {
@@ -1184,6 +1254,19 @@ namespace WobblyLife_ConsoleCommands
 
     }
 
+    class PatchPlayerVehicle
+    {
+        [HarmonyPatch(typeof(PlayerVehicle), "IsIndestructible")]
+        [HarmonyPrefix]
+        static bool IsIndestructiblePrefix(ref bool __result)
+        {
+            __result = true;
+            return false;
+        }
+
+    }
+
+
     class PatchGameInstance
     {
         [HarmonyPatch(typeof(GameInstance), "GetMaxAllowedPlayers_Arcade")]
@@ -1202,5 +1285,4 @@ namespace WobblyLife_ConsoleCommands
         }
     }
 
-    
 }
