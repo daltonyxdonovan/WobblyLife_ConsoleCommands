@@ -1,6 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\obj",
+    "\\obj\\Debug",
+    "\\obj\\Debug\\net472"
   ],
   "SelectedNode": "\\Plugin.cs",
   "PreviewInSolutionExplorer": false

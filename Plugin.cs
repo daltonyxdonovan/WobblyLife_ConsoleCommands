@@ -9,12 +9,27 @@ using JetBrains.Annotations;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
+using HawkNetworking;
 
 namespace WobblyLife_ConsoleCommands
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
+        public static Plugin instance;
+
+        public static Plugin Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new Plugin();
+                }
+                return instance;
+            }
+        }
+
         RagdollController ragdoll;
         AchievementManager achievementManager;
         float vertSpeed = 0.1f;
@@ -132,13 +147,28 @@ namespace WobblyLife_ConsoleCommands
         };
         GameObject player;
         Vector3 playerPos = new Vector3(0, 0, 0);
+        int ticker = 600;
+        bool returnedFromGame = false;
+        bool automatic = false;
+        public int peopleAllowed = 10;
+        public TextMeshProUGUI playerLimitText;fadfdafadf
 
+        public int GetPeopleAllowed()
+        {
+            return peopleAllowed;
+        }
 
 
         private void Awake()
         {
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
             achievementManager = AchievementManager.Instance;
+
+            var instance = new Harmony("tester");
+            instance.PatchAll(typeof(PatchHawkNetworkManager));
+
+            var instance2 = new Harmony("tester2");
+            instance2.PatchAll(typeof(PatchSteamP2PNetworkManager));
         }
 
         public GameObject GetPlayerCharacter()
@@ -168,6 +198,18 @@ namespace WobblyLife_ConsoleCommands
                 yOffset += 1.5f;
             }
             Log($"teleported all to\n{locationPos}");
+        }
+
+        public void StartArcade()
+        {
+            ArcadeInstance.Instance.GetLobbyInstance().ServerSetArcadeMode(ArcadeMode.Game);
+        }
+
+        public void StartAutomaticArcade()
+        {
+            int modes = 4;
+            ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex = Random.RandomRange(0,3);
+            ArcadeInstance.Instance.GetLobbyInstance().ServerSetArcadeMode(ArcadeMode.Game);
         }
 
         public void ChangeSpeed(float mult)
@@ -231,12 +273,21 @@ namespace WobblyLife_ConsoleCommands
                 popupText.rectTransform.position = new Vector3(0, 0, 0);
                 popupText.enableWordWrapping = false;
                 Debug.Log("attached console");
+                
             }
-            catch(System.Exception e)
+            catch (System.Exception e)
             {
                 //Debug.Log("failed to attach console");
             }
             
+
+        }
+
+        public void SetJoinable()
+        {
+            HawkNetworking.HawkNetworkManager hawk = FindObjectOfType<HawkNetworking.HawkNetworkManager>();
+            hawk.SetJoinable(hawk, true);
+            //Debug.Log("Set hawk.isJoinable to true hopefull");
 
         }
 
@@ -394,8 +445,61 @@ namespace WobblyLife_ConsoleCommands
 
         public void Update()
         {
+            //if scene name is 'ArcadeLobby' then we just got here and will flip our flag;
+            if (SceneManager.GetActiveScene().name == "ArcadeLobby" && automatic)
+            {
+                if (!returnedFromGame)
+                {
+                    returnedFromGame = true;
+                    ticker = 1200;
+                    Log("Starting Arcade shortly...");
+                }
+                else
+                {
+                    ticker--;
+                }
+
+                if (ticker <= 0)
+                {
+                    Log("Starting Arcade!");
+                    ticker = 1200;
+                    int randomChoice;
+                    //50/50 chance between 0 and 3
+                    if (Random.Range(0, 2) == 0)
+                    {
+                        randomChoice = 0;
+                    }
+                    else
+                    {
+                        randomChoice = 3;
+                    }
+
+                    ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex = randomChoice;
+                    
+                    Log("Map set to " + ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex + "!");
+                    StartArcade();
+                    returnedFromGame = false;
+                    
+                }
+            }
+            else if (SceneManager.GetActiveScene().name != "ArcadeLobby" && automatic)
+            {
+
+                returnedFromGame = false;
+            }
             
-            
+
+
+            HawkNetworking.HawkNetworkManager hawk = FindObjectOfType<HawkNetworking.HawkNetworkManager>();
+            if (hawk == null)
+            {
+                
+            }
+            else
+            {
+                SetJoinable();
+            }
+
             
             if (SceneManager.GetActiveScene().name == "MainMenu")
             {
@@ -455,6 +559,8 @@ namespace WobblyLife_ConsoleCommands
                     commandText.text = command;
                 }
 
+                
+
                 if (Input.GetKeyDown(KeyCode.Backspace))
                 {
                     if (command.Length > 1)
@@ -471,6 +577,8 @@ namespace WobblyLife_ConsoleCommands
 
                 if (Input.GetKeyDown(KeyCode.Return))
                 {
+
+
                     if (command.ToLower().StartsWith("/test") || command.ToLower().StartsWith("test"))
                     {
                         Log("what the fuck man");
@@ -489,6 +597,48 @@ namespace WobblyLife_ConsoleCommands
                             return;
                         }
                         AddMoney(choice);
+                    }
+                    else if (command.ToLower().StartsWith("/start") || command.ToLower().StartsWith("start"))
+                    {
+                        StartArcade();
+                    }
+                    else if (command.ToLower().StartsWith("/map") || command.ToLower().StartsWith("map"))
+                    {
+                        ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex = Random.RandomRange(0,3);
+                        while (ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex == 1)
+                        {
+                            ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex = Random.RandomRange(0, 3);
+                        }
+                        Log("Map set to " + ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex + "!");
+                        StartArcade();
+
+                    }
+                    else if (command.ToLower().StartsWith("/start2") || command.ToLower().StartsWith("start2"))
+                    {
+                        StartAutomaticArcade();
+
+                    }
+                    else if (command.ToLower().StartsWith("/auto") || command.ToLower().StartsWith("auto"))
+                    {
+                        automatic = !automatic;
+                        Log("Automatic: " + automatic);
+                    }
+                    else if (command.ToLower().StartsWith("/users") || command.ToLower().StartsWith("users"))
+                    {
+                        string[] strings = command.Split();
+                        int choice = int.Parse(strings[1]);
+                        if (choice < 0 || choice > 100)
+                        {
+                            Log("Choose an amount 0 - 100");
+                            return;
+                        }
+                        peopleAllowed = choice;
+                        Log("People allowed set to " + choice + "!");
+
+                        var instance = new Harmony("tester");
+                        instance.PatchAll(typeof(PatchGameInstance));
+                        var instance2 = new Harmony("tester2");
+                        instance2.PatchAll(typeof(PatchSteamP2PNetworkManager));
                     }
                     else if (command.ToLower().StartsWith("/speed") || command.ToLower().StartsWith("speed"))
                     {
@@ -634,7 +784,7 @@ namespace WobblyLife_ConsoleCommands
                 }
 
 
-                if (SceneManager.GetActiveScene().name == "WobblyIsland")
+                if (SceneManager.GetActiveScene().name == "WobblyIsland" || SceneManager.GetActiveScene().name == "ArcadeLobby" || SceneManager.GetActiveScene().name == "WobblyRun" || SceneManager.GetActiveScene().name == "Quarry")
                 {
                     if (!player)
                         player = GetPlayerCharacter();
@@ -1008,4 +1158,49 @@ namespace WobblyLife_ConsoleCommands
             return false;
         }
     }
+
+    class PatchHawkNetworkManager
+    {
+
+        [HarmonyPatch(typeof(HawkNetworking.HawkNetworkManager), "IsJoinable")]
+        [HarmonyPrefix]
+        static bool IsJoinablePrefix(ref bool __result)
+        {
+            __result = true;
+            return false;
+        }
+        
+    }
+
+    class PatchSteamP2PNetworkManager
+    {
+        [HarmonyPatch(typeof(SteamP2PNetworkManager), "GetMaxPlayerCount")]
+        [HarmonyPrefix]
+        static bool GetMaxPlayerCountPrefix(ref int __result)
+        {
+            __result = Plugin.Instance.peopleAllowed;
+            return false;
+        }
+
+    }
+
+    class PatchGameInstance
+    {
+        [HarmonyPatch(typeof(GameInstance), "GetMaxAllowedPlayers_Arcade")]
+        [HarmonyPrefix]
+        static bool GetMaxPlayerCount1Prefix(ref int __result)
+        {
+            __result = Plugin.Instance.peopleAllowed;
+            return false;
+        }
+        [HarmonyPatch(typeof(GameInstance), "GetMaxAllowedPlayers_Game")]
+        [HarmonyPrefix]
+        static bool GetMaxPlayerCount2Prefix(ref int __result)
+        {
+            __result = Plugin.Instance.peopleAllowed;
+            return false;
+        }
+    }
+
+    
 }
