@@ -576,7 +576,7 @@ namespace WobblyLife_ConsoleCommands
                     popupTimer--;
                     
                 }
-                if (popupTimer <= 0)
+                else
                 {
                     popup = "";
                 }
@@ -600,8 +600,6 @@ namespace WobblyLife_ConsoleCommands
                     }
                     commandText.text = command;
                 }
-
-                
 
                 if (Input.GetKeyDown(KeyCode.Backspace))
                 {
@@ -849,7 +847,7 @@ namespace WobblyLife_ConsoleCommands
                 }
 
 
-                if (SceneManager.GetActiveScene().name == "WobblyIsland" || SceneManager.GetActiveScene().name == "ArcadeLobby" || SceneManager.GetActiveScene().name == "WobblyRun" || SceneManager.GetActiveScene().name == "Quarry")
+                if (SceneManager.GetActiveScene().name == "WobblyIsland" ||SceneManager.GetActiveScene().name == "WobbleRun_10_TheWobblyGauntlet" || SceneManager.GetActiveScene().name == "WobbleRun_9_BeachBallBash" || SceneManager.GetActiveScene().name == "WobbleRun_8_WobbleDrop" || SceneManager.GetActiveScene().name == "WobbleRun_7_SneakySpinners" || SceneManager.GetActiveScene().name == "WobbleRun_6_BoxingGloveBouncer" || SceneManager.GetActiveScene().name == "WobbleRun_5_BarrelBonanza" ||  SceneManager.GetActiveScene().name == "WobbleRun_4_RapidRaceway" || SceneManager.GetActiveScene().name == "WobbleRun_3_DizzyDiscs" ||SceneManager.GetActiveScene().name == "WobbleRun_2_SlippingSliders" || SceneManager.GetActiveScene().name == "WobbleRun_1_JoyfulJumper" ||  SceneManager.GetActiveScene().name == "Trash Man Scene" || SceneManager.GetActiveScene().name == "ArcadeLobby" || SceneManager.GetActiveScene().name == "WobblyRun" || SceneManager.GetActiveScene().name == "Quarry")
                 {
                     if (!player)
                         player = GetPlayerCharacter();
@@ -1265,7 +1263,6 @@ namespace WobblyLife_ConsoleCommands
         }
 
     }
-
 
     class PatchGameInstance
     {
