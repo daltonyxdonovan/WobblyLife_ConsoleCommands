@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "yUhqmS8ldxYcnLkRhUqfm4szXTZzaDp2QEXcCLLbYQQBBvtpeRzMKYzj9cEF258DE6Jmt8srs/vIDhby5MGCDw==",
+  "dgSpecHash": "R5OvxCCU3mMeYVZkfrPUdGjosCgVHo++SZhqKNl3MxXI6oVwX+8iJ64uCAOsySEenKGkipmPe7N6ArUjse/I5A==",
   "success": true,
-  "projectFilePath": "C:\\Users\\dalto\\Source\\Repos\\daltonyxdonovan\\WobblyLife_ConsoleCommands\\WobblyLife_ConsoleCommands.csproj",
+  "projectFilePath": "C:\\Users\\dalto\\source\\repos\\WobblyLife_ConsoleCommands\\WobblyLife_ConsoleCommands.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\dalto\\.nuget\\packages\\bepinex.analyzers\\1.0.8\\bepinex.analyzers.1.0.8.nupkg.sha512",
     "C:\\Users\\dalto\\.nuget\\packages\\bepinex.core\\6.0.0-pre.1\\bepinex.core.6.0.0-pre.1.nupkg.sha512",

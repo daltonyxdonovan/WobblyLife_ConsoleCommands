@@ -1005,17 +1005,17 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\dalto\\Source\\Repos\\daltonyxdonovan\\WobblyLife_ConsoleCommands\\WobblyLife_ConsoleCommands.csproj",
+      "projectUniqueName": "C:\\Users\\dalto\\source\\repos\\WobblyLife_ConsoleCommands\\WobblyLife_ConsoleCommands.csproj",
       "projectName": "WobblyLife_ConsoleCommands",
-      "projectPath": "C:\\Users\\dalto\\Source\\Repos\\daltonyxdonovan\\WobblyLife_ConsoleCommands\\WobblyLife_ConsoleCommands.csproj",
+      "projectPath": "C:\\Users\\dalto\\source\\repos\\WobblyLife_ConsoleCommands\\WobblyLife_ConsoleCommands.csproj",
       "packagesPath": "C:\\Users\\dalto\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\dalto\\Source\\Repos\\daltonyxdonovan\\WobblyLife_ConsoleCommands\\obj\\",
+      "outputPath": "C:\\Users\\dalto\\source\\repos\\WobblyLife_ConsoleCommands\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\dalto\\Source\\Repos\\daltonyxdonovan\\WobblyLife_ConsoleCommands\\NuGet.Config",
+        "C:\\Users\\dalto\\source\\repos\\WobblyLife_ConsoleCommands\\NuGet.Config",
         "C:\\Users\\dalto\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
