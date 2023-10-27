@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using HawkNetworking;
+using Unity.Audio;
+using System;
 
 namespace WobblyLife_ConsoleCommands
 {
@@ -154,9 +156,9 @@ namespace WobblyLife_ConsoleCommands
         int ticker = 600;
         bool returnedFromGame = false;
         bool automatic = false;
-        public int peopleAllowed = 10;
+        public int peopleAllowed = 100;
         public TextMeshProUGUI playerLimitText;
-
+        PlayerController playerController;
 
 
 
@@ -176,12 +178,6 @@ namespace WobblyLife_ConsoleCommands
         {
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
             achievementManager = AchievementManager.Instance;
-
-            var instance = new Harmony("tester");
-            instance.PatchAll(typeof(PatchHawkNetworkManager));
-
-            var instance2 = new Harmony("tester2");
-            instance2.PatchAll(typeof(PatchSteamP2PNetworkManager));
         }
 
         public GameObject GetPlayerCharacter()
@@ -221,7 +217,7 @@ namespace WobblyLife_ConsoleCommands
         public void StartAutomaticArcade()
         {
             int modes = 4;
-            ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex = Random.RandomRange(0,3);
+            ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex = UnityEngine.Random.RandomRange(0,3);
             ArcadeInstance.Instance.GetLobbyInstance().ServerSetArcadeMode(ArcadeMode.Game);
         }
 
@@ -458,89 +454,62 @@ namespace WobblyLife_ConsoleCommands
         
         public void SpawnTextPet(string text)
         {
-
-            Pet petPrefab = new Pet();
+            PlayerControllerPet playerControllerPet = GetPlayer().GetPlayerControllerPet();
+            MiscDataScriptableObject miscData = UnitySingleton<PersistentContentManager>.Instance.GetMiscData();
+            Pet petPrefab = miscData.GetGhostPet();
             petPrefab.Setup(GetPlayer());
             petPrefab.SetPetName(text);
             petPrefab.SetPetNameVisible(true);
-            Color transparent = new Color(0, 0, 0, 0);
+            Color transparent = new Color(0, 0, 0, 255);
             petPrefab.SetColour(transparent);
+            Log("Set color and created petPrefab");
             
             PetData petData = new PetData();
             petData.petName = text;
             petData.petColor = transparent;
             petData.guid = new System.Guid();
+            Log("Created a new petData and GUID");
 
             if (petPrefab)
             {
-                
-                PlayerControllerPet playerControllerPet = GetPlayer().GetPlayerControllerPet();
-                if (playerControllerPet)
-                {
-                        
-                    playerControllerPet.SetPetSlot(0, petPrefab, new PetData?(petData));
-                    playerControllerPet.SetActivePet(0);
-                }
-                
+                Log("Setting pet to slot...");
+                playerControllerPet.SetPetSlot(0, petPrefab, new PetData?(petData));
+                playerControllerPet.SetActivePet(0);
+                //playerControllerPet.ServerSetActivePet(petData.guid, new PetData?(petData), null, false);
             }
         }
 
+        public void SetIndestructable()
+	    {
+            //PlayerVehicle[] playerVehicles = FindObjectsOfType<PlayerVehicle>();
+            //Log("Attempting to set all player vehicles to indestructible...");
+            //for (int i = 0; i < playerVehicles.Length; i++)
+            //{
+            //    Object handle;
+            //    List<Object> indestructableHandles;
+            //    indestructableHandles = new List<Object>();
+            //    handle = playerVehicles[i];
+            //    indestructableHandles.Add(handle);
+            //    playerVehicles[i].bIndestructable = true;
+            //    PlayerVehicle.OnVehicleIndestructableDelegate onVehicleIndestructableDelegate = playerVehicles[i].onIndestructableChanged;
+            //    if (onVehicleIndestructableDelegate == null)
+            //    {
+            //        return;
+            //    }
+            //    onVehicleIndestructableDelegate(this, true);
+            //}
+            Log("Finished attempt to set all player vehicles to indestructible! LMK");
+			return;
+		}
+		
+
+
+
         public void Update()
         {
-            //if scene name is 'ArcadeLobby' then we just got here and will flip our flag;
-            if (SceneManager.GetActiveScene().name == "ArcadeLobby" && automatic)
-            {
-                if (!returnedFromGame)
-                {
-                    returnedFromGame = true;
-                    ticker = 1200;
-                    Log("Starting Arcade shortly...");
-                }
-                else
-                {
-                    ticker--;
-                }
-
-                if (ticker <= 0)
-                {
-                    Log("Starting Arcade!");
-                    ticker = 1200;
-                    int randomChoice;
-                    //50/50 chance between 0 and 3
-                    if (Random.Range(0, 2) == 0)
-                    {
-                        randomChoice = 0;
-                    }
-                    else
-                    {
-                        randomChoice = 3;
-                    }
-
-                    ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex = randomChoice;
-                    
-                    Log("Map set to " + ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex + "!");
-                    StartArcade();
-                    returnedFromGame = false;
-                    
-                }
-            }
-            else if (SceneManager.GetActiveScene().name != "ArcadeLobby" && automatic)
-            {
-
-                returnedFromGame = false;
-            }
             
 
-
-            HawkNetworking.HawkNetworkManager hawk = FindObjectOfType<HawkNetworking.HawkNetworkManager>();
-            if (hawk == null)
-            {
-                
-            }
-            else
-            {
-                SetJoinable();
-            }
+           
 
             
             if (SceneManager.GetActiveScene().name == "MainMenu")
@@ -556,13 +525,6 @@ namespace WobblyLife_ConsoleCommands
             if (canvas == null)
             {
                 AttachConsole();
-            }
-            else
-            {
-
-
-
-
 
                 popupText.rectTransform.position = new Vector3(0, 0, 0);
                 commandText.rectTransform.position = new Vector3(0, 0, 0);
@@ -570,6 +532,16 @@ namespace WobblyLife_ConsoleCommands
                 commandText.rectTransform.localScale = new Vector3(1, 1, 1);
                 popupText.rectTransform.localPosition = new Vector3(0, 0, 0);
                 commandText.rectTransform.localPosition = new Vector3(0, -500, 0);
+            }
+            else
+            {
+                if (!playerController)
+                    playerController = GetPlayer();
+
+
+
+
+                
 
                 if (popupTimer > 0)
                 {
@@ -647,8 +619,9 @@ namespace WobblyLife_ConsoleCommands
                     }
                     else if (command.ToLower().StartsWith("/indestructible") || command.ToLower().StartsWith("indestructible"))
                     {
-                        var instance = new Harmony("tester");
+                        var instance = new Harmony("indestructibleVehicle");
                         instance.PatchAll(typeof(PatchPlayerVehicle));
+                        SetIndestructable();
                     }
                     else if (command.ToLower().StartsWith("/cash") || command.ToLower().StartsWith("cash"))
                     {
@@ -665,12 +638,43 @@ namespace WobblyLife_ConsoleCommands
                     {
                         StartArcade();
                     }
+                    else if (command.ToLower().StartsWith("/maxpets") || command.ToLower().StartsWith("maxpets"))
+                    {
+                        
+                       
+
+                        
+                    }
+                    else if (command.ToLower().StartsWith("/jump") || command.ToLower().StartsWith("jump"))
+                    {
+                        string[] strings = command.Split();
+                        float choice = float.Parse(strings[1]);
+                        if (choice < 0 || choice > 100)
+                        {
+                            Log("Choose an amount 0 - 100");
+                            return;
+                        }
+                        PlayerCharacterMovement playerCharacterMovement = FindObjectOfType<PlayerCharacterMovement>();
+                        playerCharacterMovement.SetJumpMultiplier(choice);
+                        Log("Set Jump Multiplier to " + choice + "!");
+
+                        
+                    }
+                    else if (command.ToLower().StartsWith("/explode") || command.ToLower().StartsWith("explode"))
+                    {
+                        
+                        PlayerCharacterMovement playerCharacterMovement = FindObjectOfType<PlayerCharacterMovement>();
+                        //playerController.
+                        //playerCharacterMovement.Explode();
+
+                        
+                    }
                     else if (command.ToLower().StartsWith("/map") || command.ToLower().StartsWith("map"))
                     {
-                        ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex = Random.RandomRange(0,3);
+                        ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex = UnityEngine.Random.RandomRange(0,3);
                         while (ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex == 1)
                         {
-                            ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex = Random.RandomRange(0, 3);
+                            ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex = UnityEngine.Random.RandomRange(0, 3);
                         }
                         Log("Map set to " + ArcadeInstance.Instance.GetLobbyInstance().GetLobbyInfoData().officalArcadeModeIndex + "!");
                         StartArcade();
@@ -771,21 +775,6 @@ namespace WobblyLife_ConsoleCommands
 
                         Log("All vehicles are unlocked - WIP");
                     }
-                    else if (command.ToLower().StartsWith("/flightspeed") || command.ToLower().StartsWith("flightspeed"))
-                    {
-                        string[] strings = command.Split();
-                        float choice = float.Parse(strings[1]);
-
-                        if (choice < 1 || choice > 100)
-                        {
-                            Log("Choose an amount 1 - 100\nExample: /flightspeed 4.4");
-                            return;
-                        }
-
-                        flightSpeed = choice;
-                        vertSpeed = choice/10;
-                        Log("FlightSpeed set to " + flightSpeed + "\nVerticalSpeed set to " + vertSpeed);
-                    }
                     else if (command.ToLower().StartsWith("/clothes") || command.ToLower().StartsWith("clothes"))
                     {
                         var instance = new Harmony("tester");
@@ -802,27 +791,12 @@ namespace WobblyLife_ConsoleCommands
                     }
                     else if (command.ToLower().StartsWith("flight") || command.ToLower().StartsWith("/flight"))
                     {
-                        if (!player)
-                            player = GetPlayerCharacter();
-                        bool choice = bool.Parse((command.Split()[1]));
-
-                        if (choice == true || choice == false)
-                        {
-                            if (choice)
-                            {
-                                
-                                flight = true;
-                            }
-                            if (!choice)
-                            {
-                                
-                                flight = false;
-                            }
-                        }
-                        else
-                        {
-                            Log("command error> true or false only");
-                        }
+                        string[] strings = command.Split();
+                        bool choice = bool.Parse(strings[1]);
+                        PlayerCharacterMovement playerCharacterMovement = FindObjectOfType<PlayerCharacterMovement>();
+                        playerCharacterMovement.SetNoClipEnabled(choice);
+                        Log("Set noClip to " + choice + "!");
+                        
                     }
                     else if (command.ToLower().StartsWith("tp3") || command.ToLower().StartsWith("/tp3"))
                     {
@@ -846,71 +820,6 @@ namespace WobblyLife_ConsoleCommands
                     command = "press / or Up arrow to open console";
                 }
 
-
-                if (SceneManager.GetActiveScene().name == "WobblyIsland" ||SceneManager.GetActiveScene().name == "WobbleRun_10_TheWobblyGauntlet" || SceneManager.GetActiveScene().name == "WobbleRun_9_BeachBallBash" || SceneManager.GetActiveScene().name == "WobbleRun_8_WobbleDrop" || SceneManager.GetActiveScene().name == "WobbleRun_7_SneakySpinners" || SceneManager.GetActiveScene().name == "WobbleRun_6_BoxingGloveBouncer" || SceneManager.GetActiveScene().name == "WobbleRun_5_BarrelBonanza" ||  SceneManager.GetActiveScene().name == "WobbleRun_4_RapidRaceway" || SceneManager.GetActiveScene().name == "WobbleRun_3_DizzyDiscs" ||SceneManager.GetActiveScene().name == "WobbleRun_2_SlippingSliders" || SceneManager.GetActiveScene().name == "WobbleRun_1_JoyfulJumper" ||  SceneManager.GetActiveScene().name == "Trash Man Scene" || SceneManager.GetActiveScene().name == "ArcadeLobby" || SceneManager.GetActiveScene().name == "WobblyRun" || SceneManager.GetActiveScene().name == "Quarry")
-                {
-                    if (!player)
-                        player = GetPlayerCharacter();
-                    if (flight && player)
-                    {
-                        if (ragdoll == null)
-                        {
-                            if (player == null)
-                                player = GetPlayerCharacter();
-                            if (player != null)
-                               ragdoll = player.GetComponent<RagdollController>();
-                        }
-                        else
-                        {
-                            if (ragdoll != null)
-                                ragdoll.LockRagdollState();
-                            else
-                                Log("Can't find ragdoll!");
-                        }
-                        if (Input.GetKey(KeyCode.Space))
-                        {
-                            playerPos = new Vector3(playerPos.x, playerPos.y + vertSpeed, playerPos.z);
-                        }
-                        if (Input.GetKey(KeyCode.LeftShift))
-                        {
-                            playerPos = new Vector3(playerPos.x, playerPos.y - vertSpeed, playerPos.z);
-                        }
-                        // Get the vertical and horizontal input axes
-                        float verticalInput = Input.GetAxis("Vertical");
-                        float horizontalInput = Input.GetAxis("Horizontal");
-
-                        // Get the camera's forward and right vectors
-                        Vector3 cameraForward = Camera.main.transform.forward;
-                        Vector3 cameraRight = Camera.main.transform.right;
-
-                        // Calculate the movement direction relative to the camera's orientation
-                        Vector3 movementDirection = (cameraForward * verticalInput) + (cameraRight * horizontalInput);
-
-                        // Set the y component to 0 to restrict movement to the x-z plane
-                        movementDirection.y = 0f;
-
-                        // Normalize the vector to ensure consistent movement speed
-                        movementDirection.Normalize();
-
-                        //multiply by flightSpeed
-                        movementDirection *= flightSpeed;
-
-                        // Move the player in the calculated direction
-                        Vector3 translation = movementDirection * (vertSpeed * 40) * Time.fixedDeltaTime;
-
-                        playerPos += translation;
-
-                        if (!player)
-                            player = GetPlayerCharacter();
-                        player.transform.position = playerPos;
-                    }
-                    else if (!flight && player)
-                    {
-                        if (!player)
-                            player = GetPlayerCharacter();
-                        playerPos = player.transform.position;
-                    }
-                }
 
                 if (showConsole)
                 {
@@ -1101,6 +1010,11 @@ namespace WobblyLife_ConsoleCommands
                     }
                 }
 
+
+
+                
+
+                
             }
         }
 
@@ -1257,6 +1171,14 @@ namespace WobblyLife_ConsoleCommands
         [HarmonyPatch(typeof(PlayerVehicle), "IsIndestructible")]
         [HarmonyPrefix]
         static bool IsIndestructiblePrefix(ref bool __result)
+        {
+            __result = true;
+            return false;
+        }
+
+        [HarmonyPatch(typeof(PlayerVehicle), "IsIndestructible")]
+        [HarmonyPostfix]
+        static bool IsIndestructiblePostfix(ref bool __result)
         {
             __result = true;
             return false;

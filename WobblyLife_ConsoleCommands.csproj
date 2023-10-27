@@ -31,6 +31,9 @@
     <Reference Include="assembly">
 		  <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Wobbly Life\Wobbly Life_Data\Managed\Sandbox.dll</HintPath>
 	  </Reference>
+	<Reference Include="assembly">
+		  <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Wobbly Life\Wobbly Life_Data\Managed\ModWobblyLife.dll</HintPath>
+	  </Reference>
     <Reference Include="assembly">
 		  <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Wobbly Life\Wobbly Life_Data\Managed\Unity.TextMeshPro.dll</HintPath>
 	  </Reference>

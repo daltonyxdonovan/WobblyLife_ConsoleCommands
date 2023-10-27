@@ -1,7 +1,10 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\obj",
+    "\\obj\\Debug",
+    "\\obj\\Debug\\net472"
   ],
-  "SelectedNode": "\\C:\\Users\\dalto\\Source\\Repos\\daltonyxdonovan\\WobblyLife_ConsoleCommands",
+  "SelectedNode": "\\Plugin.cs",
   "PreviewInSolutionExplorer": false
 }
