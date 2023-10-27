@@ -159,6 +159,9 @@ namespace WobblyLife_ConsoleCommands
         public TextMeshProUGUI playerLimitText;
         PlayerController playerController;
         Color transparent = new Color(0, 0, 0, 0);
+        public bool rangeHack = false;
+        public bool notDone = true;
+
         #endregion
 
         #region METHODS
@@ -523,6 +526,17 @@ namespace WobblyLife_ConsoleCommands
                     popup = "";
                 }
 
+                if (rangeHack && notDone)
+                {
+                    CameraFocusFree cameraFocusFree = FindObjectOfType<CameraFocusFree>();
+                    if (cameraFocusFree && notDone)
+                    {
+                        cameraFocusFree.SetLockDistance(99999);
+                        cameraFocusFree.SetLockDistanceEnabled(false);
+                        notDone = false;
+                    }
+                }
+
                 commandText.text = command;
                 popupText.text = popup;
 
@@ -545,9 +559,7 @@ namespace WobblyLife_ConsoleCommands
 
                 if (Input.GetKeyDown(KeyCode.F1))
                 {
-                    CameraFocusFree cameraFocusFree = FindObjectOfType<CameraFocusFree>();
-                    cameraFocusFree.SetLockDistance(99999);
-                    cameraFocusFree.SetLockDistanceEnabled(false);
+                    rangeHack = true;
                 }
 
                 if (Input.GetKeyDown(KeyCode.DownArrow) && noclipticker == 0)
