@@ -1183,7 +1183,17 @@ namespace WobblyLife_ConsoleCommands
             __result = true;
             return false;
         }
+    }
 
+    class PatchLobbySelectCanvas
+    {
+        [HarmonyPatch(typeof(LobbySelectcanvas), "IsFullOrInvalid")]
+        [HarmonyPrefix]
+        static bool IsIndestructiblePrefix(ref bool __result)
+        {
+            __result = false;
+            return false;
+        }
     }
 
     class PatchGameInstance
