@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿#region IMPORTS
+using BepInEx;
 using Steamworks;
 using UnityEngine.UI;
 using UnityEngine;
@@ -12,12 +13,14 @@ using HarmonyLib;
 using HawkNetworking;
 using Unity.Audio;
 using System;
+#endregion
 
 namespace WobblyLife_ConsoleCommands
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
+        #region VARIABLES
         public static Plugin instance;
 
         public static Plugin Instance
@@ -31,11 +34,7 @@ namespace WobblyLife_ConsoleCommands
                 return instance;
             }
         }
-
-
-
-
-
+        int noclipticker = 0;
         RagdollController ragdoll;
         AchievementManager achievementManager;
         float vertSpeed = 0.1f;
@@ -159,16 +158,10 @@ namespace WobblyLife_ConsoleCommands
         public int peopleAllowed = 100;
         public TextMeshProUGUI playerLimitText;
         PlayerController playerController;
+        Color transparent = new Color(0, 0, 0, 0);
+        #endregion
 
-
-
-
-
-
-
-
-
-
+        #region METHODS
         public int GetPeopleAllowed()
         {
             return peopleAllowed;
@@ -481,37 +474,14 @@ namespace WobblyLife_ConsoleCommands
 
         public void SetIndestructable()
 	    {
-            //PlayerVehicle[] playerVehicles = FindObjectsOfType<PlayerVehicle>();
-            //Log("Attempting to set all player vehicles to indestructible...");
-            //for (int i = 0; i < playerVehicles.Length; i++)
-            //{
-            //    Object handle;
-            //    List<Object> indestructableHandles;
-            //    indestructableHandles = new List<Object>();
-            //    handle = playerVehicles[i];
-            //    indestructableHandles.Add(handle);
-            //    playerVehicles[i].bIndestructable = true;
-            //    PlayerVehicle.OnVehicleIndestructableDelegate onVehicleIndestructableDelegate = playerVehicles[i].onIndestructableChanged;
-            //    if (onVehicleIndestructableDelegate == null)
-            //    {
-            //        return;
-            //    }
-            //    onVehicleIndestructableDelegate(this, true);
-            //}
             Log("Finished attempt to set all player vehicles to indestructible! LMK");
 			return;
 		}
-		
-
-
+        #endregion
 
         public void Update()
         {
-            
-
-           
-
-            
+            #region STARTUP
             if (SceneManager.GetActiveScene().name == "MainMenu")
             {
                 doneStartingUp = true;
@@ -533,15 +503,15 @@ namespace WobblyLife_ConsoleCommands
                 popupText.rectTransform.localPosition = new Vector3(0, 0, 0);
                 commandText.rectTransform.localPosition = new Vector3(0, -500, 0);
             }
+            #endregion
             else
             {
+
+                #region UPDATE INIT / REFRESH
+                if (noclipticker > 0)
+                    noclipticker--;
                 if (!playerController)
                     playerController = GetPlayer();
-
-
-
-
-                
 
                 if (popupTimer > 0)
                 {
@@ -573,6 +543,31 @@ namespace WobblyLife_ConsoleCommands
                     commandText.text = command;
                 }
 
+                if (Input.GetKeyDown(KeyCode.F1))
+                {
+                    CameraFocusFree cameraFocusFree = FindObjectOfType<CameraFocusFree>();
+                    cameraFocusFree.SetLockDistance(99999);
+                    cameraFocusFree.SetLockDistanceEnabled(false);
+                }
+
+                if (Input.GetKeyDown(KeyCode.DownArrow) && noclipticker == 0)
+                {
+                    PlayerCharacterMovement playerCharacterMovement = FindObjectOfType<PlayerCharacterMovement>();
+                    playerCharacterMovement.SetNoClipEnabled(!playerCharacterMovement.IsNoClipEnabled());
+                    Log("NoClip set to " + playerCharacterMovement.IsNoClipEnabled());
+                    noclipticker = 50;
+                }
+
+                if (Input.GetKeyDown(KeyCode.RightArrow))
+                {
+                    commandText.color = Color.white;
+                }
+
+                if (Input.GetKeyDown(KeyCode.LeftArrow))
+                {
+                    commandText.color = Color.clear;
+                }
+
                 if (Input.GetKeyDown(KeyCode.Backspace))
                 {
                     if (command.Length > 1)
@@ -586,7 +581,9 @@ namespace WobblyLife_ConsoleCommands
                         commandText.text = command;
                     }
                 }
+                #endregion
 
+                #region COMMANDS
                 if (Input.GetKeyDown(KeyCode.Return))
                 {
 
@@ -814,13 +811,21 @@ namespace WobblyLife_ConsoleCommands
                         }
 
                     }
+                    else if (command.ToLower().StartsWith("range") || command.ToLower().StartsWith("/range"))
+                    {
+                        
+                        CameraFocusFree cameraFocusFree = FindObjectOfType<CameraFocusFree>();
+                        cameraFocusFree.SetLockDistance(99999);
+                        cameraFocusFree.SetLockDistanceEnabled(false);
 
+                    }
 
                     showConsole = false;
                     command = "press / or Up arrow to open console";
                 }
+                #endregion
 
-
+                #region INPUTS
                 if (showConsole)
                 {
                     if (Input.GetKeyDown(KeyCode.A))
@@ -1009,22 +1014,12 @@ namespace WobblyLife_ConsoleCommands
                         commandText.text = command;
                     }
                 }
-
-
-
-                
-
-                
+                #endregion 
             }
         }
-
     }
 
-
-
-
-
-
+    #region PATCHES
 
     class PatchPetShop
     {
@@ -1187,7 +1182,7 @@ namespace WobblyLife_ConsoleCommands
 
     class PatchLobbySelectCanvas
     {
-        [HarmonyPatch(typeof(LobbySelectcanvas), "IsFullOrInvalid")]
+        [HarmonyPatch(typeof(LobbySelectCanvas), "IsFullOrInvalid")]
         [HarmonyPrefix]
         static bool IsIndestructiblePrefix(ref bool __result)
         {
@@ -1213,5 +1208,6 @@ namespace WobblyLife_ConsoleCommands
             return false;
         }
     }
+    #endregion
 
 }
