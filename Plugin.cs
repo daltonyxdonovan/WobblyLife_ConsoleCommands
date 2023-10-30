@@ -580,6 +580,15 @@ namespace WobblyLife_ConsoleCommands
                     commandText.color = Color.clear;
                 }
 
+                if (Input.GetKeyDown(KeyCode.Alpha0))
+                {
+                    PlayerWeatherDrone drone = FindObjectOfType<PlayerWeatherDrone>(); 
+
+                    PlayerHelicopterMovement playerHelicopterMovement = drone.GetComponent<PlayerHelicopterMovement>();
+
+                    playerHelicopterMovement.SetSpeedMul(1f);
+                }
+
                 if (Input.GetKeyDown(KeyCode.Backspace))
                 {
                     if (command.Length > 1)
@@ -805,6 +814,38 @@ namespace WobblyLife_ConsoleCommands
                         PlayerCharacterMovement playerCharacterMovement = FindObjectOfType<PlayerCharacterMovement>();
                         playerCharacterMovement.SetNoClipEnabled(choice);
                         Log("Set noClip to " + choice + "!");
+                        
+                    }
+                    else if (command.ToLower().StartsWith("fish") || command.ToLower().StartsWith("/fish"))
+                    {
+                        var harmony = new Harmony("PatchFishCatchableRarity");
+                        harmony.PatchAll(typeof(PatchRarityPercent));
+                        Log("Fish are now all special? WIP");
+                        
+                    }
+                    else if (command.ToLower().StartsWith("christmas") || command.ToLower().StartsWith("/christmas"))
+                    {
+                        var harmony = new Harmony("PatchWobblyHolidayScriptableObject"); // Replace 'com.example.mod' with your unique identifier
+                        
+                        harmony.PatchAll(typeof(PatchWobblyHolidayScriptableObject));
+                        Log("Merry Christmas! WIP");
+                        
+                    }
+                    else if (command.ToLower().StartsWith("time") || command.ToLower().StartsWith("/time"))
+                    {
+                        string[] strings = command.Split();
+                        string choice = strings[1];
+                        DayNightSwitch cycle = FindObjectOfType<DayNightSwitch>();
+                        if (choice.ToLower() == "day")
+                            cycle.SetDay(true);
+                        else if (choice.ToLower() == "night")
+                            cycle.SetDay(false);
+                        else
+                        {
+                            Log("invalid option\nvalid options: { day, night }");   
+                            return;
+                        }
+                        Log("Set time to " + choice + "!");
                         
                     }
                     else if (command.ToLower().StartsWith("tp3") || command.ToLower().StartsWith("/tp3"))
@@ -1033,6 +1074,31 @@ namespace WobblyLife_ConsoleCommands
 
     #region PATCHES
 
+    public class PatchRarityPercent
+    {
+        [HarmonyPatch(typeof(FishAreaScriptableObject), "RarityPercent")]
+        [HarmonyPrefix]
+        static bool ReplaceRarity(ref Dictionary<FishCatchableRarity, float> __result)
+        {
+            __result = new Dictionary<FishCatchableRarity, float>
+            {
+                { FishCatchableRarity.Special, 1f }
+            };
+            return false;
+        }
+    }
+
+    public class PatchWobblyHolidayScriptableObject
+    {
+        [HarmonyPatch(typeof(WobblyHolidayScriptableObject), "GetCurrentHoliday")]
+        [HarmonyPrefix]
+        static bool GetCurrentHolidayPrefix(ref WobblyHoliday __result)
+        {
+		    __result = WobblyHoliday.Christmas;
+            return false;
+        }
+    }
+
     class PatchPetShop
     {
         [HarmonyPatch(typeof(PetShop), "IsFree")] // Specify target method with HarmonyPatch attribute
@@ -1047,7 +1113,7 @@ namespace WobblyLife_ConsoleCommands
         [HarmonyPrefix]
         static bool CanAffordPrefix(ref bool __result)
         {
-            __result = false;
+            __result = true;
             return false;
         }
 
@@ -1073,7 +1139,7 @@ namespace WobblyLife_ConsoleCommands
 
     class PatchClothesShop
     {
-        [HarmonyPatch(typeof(ClothesShop), "GetOverallPrice")] // Specify target method with HarmonyPatch attribute
+        [HarmonyPatch(typeof(ClothesShop), "GetOverallPrice")]
         [HarmonyPrefix]
         static bool GetOverallPricePrefix(ref int __result)
         {
